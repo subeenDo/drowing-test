@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import imgObject from "./assert/img/imgObject.jpg";
 import LineEditor from './components/LineEditor';
 import DraggableToolbar from './components/draggableToolbar';
 import ObjectJune from './components/dataSample/ObjectJune';
 import ObjectMay from './components/dataSample/ObjectMay';
+import { playGroups } from './components/dataSample/PlayGroups';
+
 
 const bgMap = {
   bgJune: {
@@ -30,28 +33,54 @@ function App() {
     setBgSelect(e.target.value);
   };
 
+// 전체를 하나씩 재생
+// const handlePlay = () => {
+//   if (isPlaying) {
+//     clearInterval(playIntervalRef.current);
+//     playIntervalRef.current = null;
+//     setIsPlaying(false);
+//     setActiveType(null);
+//     return;
+//   }
 
+//   const uniqueTypes = Array.from(
+//     new Set(objects.map(obj => typeof obj.type === 'string' ? obj.type : 'image'))
+//   );
+
+//   let index = 0;
+//   setIsPlaying(true);
+
+//   playIntervalRef.current = setInterval(() => {
+//     setActiveType(uniqueTypes[index]);
+//     index = (index + 1) % uniqueTypes.length; // 순환
+//   }, 1000);
+// };
+
+
+//그룹별 재생 + 마지막엔 전체 보여주기
 const handlePlay = () => {
   if (isPlaying) {
-    // ▶️ 재생 중일 때 -> 정지
     clearInterval(playIntervalRef.current);
     playIntervalRef.current = null;
     setIsPlaying(false);
-    setActiveType(null);
+    setActiveType([]);
     return;
   }
-
-  // 🟢 재생 시작
-  const uniqueTypes = Array.from(
-    new Set(objects.map(obj => typeof obj.type === 'string' ? obj.type : 'image'))
-  );
 
   let index = 0;
   setIsPlaying(true);
 
   playIntervalRef.current = setInterval(() => {
-    setActiveType(uniqueTypes[index]);
-    index = (index + 1) % uniqueTypes.length; // 순환
+    if (index < playGroups.length) {
+      setActiveType(playGroups[index]);
+    } else {
+      const allTypes = Array.from(
+        new Set(objects.map(obj => typeof obj.type === 'string' ? obj.type : imgObject))
+      );
+      setActiveType(allTypes);
+    }
+
+    index = (index + 1) % (playGroups.length + 1);
   }, 1000);
 };
 
@@ -76,7 +105,11 @@ const handlePlay = () => {
   };
 
   const handleReset = () => {
-    setObjects([]);
+    if (bgSelect && bgMap[bgSelect]) {
+      setObjects(bgMap[bgSelect].objects || []);
+    } else {
+      setObjects([]); 
+    }
   };
 
   useEffect(() => {

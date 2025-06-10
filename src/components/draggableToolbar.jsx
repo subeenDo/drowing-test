@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import '../assert/css/LineEditor.css';
 
-const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeType, onActiveTypesChange }) => {
+const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeType }) => {
   const toolbarRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [typeSelections, setTypeSelections] = useState({});
   const offset = useRef({ x: 0, y: 0 });
 
+  // key로 문자열 혹은 "image"만 사용
   const typeCounts = objects.reduce((acc, object) => {
     const key =
       typeof object.type === 'string'
@@ -63,10 +63,6 @@ const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeTy
       window.removeEventListener('mousedown', handleClickOutside);
     };
   }, [setSelectedObject]);
-useEffect(() => {
-  const activeTypes = Object.keys(typeSelections).filter((type) => typeSelections[type]);
-  onActiveTypesChange?.(activeTypes);
-}, [typeSelections]);
 
   return (
     <div
@@ -81,7 +77,6 @@ useEffect(() => {
         <table border="1" cellPadding="5">
           <thead>
             <tr>
-              <th></th>
               <th>Index</th>
               <th>Object</th>
               <th>Count</th>
@@ -96,25 +91,14 @@ useEffect(() => {
                   backgroundColor:
                     selectedObject === type
                       ? '#d0d0d0'
-                      : activeType === type
+                      : (Array.isArray(activeType) && activeType.includes(type))
                       ? '#848484' 
                       : 'transparent',
                   cursor: 'pointer',
                   transition: 'background-color 0.3s',
                 }}
               >
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={!!typeSelections[type]}
-                    onChange={(e) =>
-                      setTypeSelections((prev) => ({
-                        ...prev,
-                        [type]: e.target.checked,
-                      }))
-                    }
-                  />
-                </td>
+
                 <td>{idx + 1}</td>
                 <td>
                   {type.startsWith('data:image') ? (
@@ -129,12 +113,6 @@ useEffect(() => {
           </tbody>
         </table>
       )}
-      <button
-          onClick={() => setTypeSelections({})}
-          data-skip-deselect
-        >
-          체크 초기화
-        </button>
     </div>
   );
 };

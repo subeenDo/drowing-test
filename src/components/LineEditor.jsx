@@ -33,7 +33,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
     return { x: svgP.x, y: svgP.y };
   };
 
-  
+
   const moveLineToCenter = (cx, cy, x1, y1, x2, y2) => {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -97,16 +97,42 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
         prevObjects.map((object) => {
           if (object.id !== objectId) return object;
 
+          const newObj = { ...object };
+
+          // 이미지 객체에 대한 리사이즈 처리
+          if (object.type && typeof object.type === 'string' && object.type.startsWith('data:image')) {
+            switch (pointType) {
+              case 'resize-tl':
+                newObj.x1 = x;
+                newObj.y1 = y;
+                break;
+              case 'resize-tr':
+                newObj.x2 = x;
+                newObj.y1 = y;
+                break;
+              case 'resize-bl':
+                newObj.x1 = x;
+                newObj.y2 = y;
+                break;
+              case 'resize-br':
+                newObj.x2 = x;
+                newObj.y2 = y;
+                break;
+              case 'line': {
+                const moved = moveImageToCenter(x - offsetX, y - offsetY, object.x1, object.y1, object.x2, object.y2);
+                return { ...object, ...moved };
+              }
+            }
+
+            return newObj;
+          }
+
+          // 일반 선 객체 처리
           if (pointType === 'start') {
             return { ...object, x1: x, y1: y };
           } else if (pointType === 'end') {
             return { ...object, x2: x, y2: y };
           } else if (pointType === 'line') {
-            if (object.type && typeof object.type === 'string' && object.type.startsWith('data:image')) {
-              const moved = moveImageToCenter(x - offsetX, y - offsetY, object.x1, object.y1, object.x2, object.y2);
-              return { ...object, ...moved };
-            }
-
             const moved = moveLineToCenter(x, y, object.x1, object.y1, object.x2, object.y2);
             return { ...object, ...moved };
           }
@@ -134,7 +160,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
 
   const handleSvgClick = (e) => {
     const tagName = e.target.tagName.toLowerCase();
-    if (['line', 'circle', 'g'].includes(tagName)) return;
+    if (['line', 'circle', 'g', 'image'].includes(tagName)) return;
     setSelectedObjectId(null);
   };
 
@@ -155,6 +181,14 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
       >
         {objects.map((object) => {
           const isSelected = object.id === selectedObjectId;
+          const isActive = () => {
+            if (activeType && Array.isArray(activeType)) {
+              if (activeType.length === 0) return true; 
+              return activeType.includes(object.type);
+            } else {
+              return selectedObject == null || selectedObject === object.type;
+            }
+          };
 
           if (object.type && typeof object.type === 'string' && object.type.startsWith('data:image')) {
             const width = object.x2 - object.x1;
@@ -163,16 +197,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
             return (
               <g  
                 key={object.id}
-                className={
-                  activeType
-                    ? activeType === object.type
-                      ? 'line-object active'
-                      : 'line-object inactive'
-                    : selectedObject == null || selectedObject === object.type
-                    ? 'line-object active'
-                    : 'line-object inactive'
-                }
-
+                className={isActive() ? 'line-object active' : 'line-object inactive'}
               >
                 <image
                   href={object.type}
@@ -183,6 +208,54 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
                   onMouseDown={handleMouseDown(object.id, 'line')}
                   style={{ cursor: 'move', pointerEvents: 'all' }}
                 />
+                {isSelected && (
+                    <>
+                      {/* 좌상 */}
+                      <circle
+                        cx={object.x1}
+                        cy={object.y1}
+                        r={6}
+                        fill="white"
+                        stroke="black"
+                        strokeWidth={2}
+                        onMouseDown={handleMouseDown(object.id, 'resize-tl')}
+                        style={{ cursor: 'nwse-resize' }}
+                      />
+                      {/* 우상 */}
+                      <circle
+                        cx={object.x2}
+                        cy={object.y1}
+                        r={6}
+                        fill="white"
+                        stroke="black"
+                        strokeWidth={2}
+                        onMouseDown={handleMouseDown(object.id, 'resize-tr')}
+                        style={{ cursor: 'nesw-resize' }}
+                      />
+                      {/* 좌하 */}
+                      <circle
+                        cx={object.x1}
+                        cy={object.y2}
+                        r={6}
+                        fill="white"
+                        stroke="black"
+                        strokeWidth={2}
+                        onMouseDown={handleMouseDown(object.id, 'resize-bl')}
+                        style={{ cursor: 'nesw-resize' }}
+                      />
+                      {/* 우하 */}
+                      <circle
+                        cx={object.x2}
+                        cy={object.y2}
+                        r={6}
+                        fill="white"
+                        stroke="black"
+                        strokeWidth={2}
+                        onMouseDown={handleMouseDown(object.id, 'resize-br')}
+                        style={{ cursor: 'nwse-resize' }}
+                      />
+                    </>
+                  )}
               </g>
             );
           }
@@ -191,16 +264,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
           return (
               <g  
                 key={object.id}
-                className={
-                  activeType
-                    ? activeType === object.type
-                      ? 'line-object active'
-                      : 'line-object inactive'
-                    : selectedObject == null || selectedObject === object.type
-                    ? 'line-object active'
-                    : 'line-object inactive'
-                }
-
+                className={isActive() ? 'line-object active' : 'line-object inactive'}
               >
               <line
                 x1={object.x1}
