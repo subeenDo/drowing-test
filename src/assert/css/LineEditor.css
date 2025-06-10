@@ -82,3 +82,16 @@
   cursor: crosshair;
 }
 
+.line-object {
+  transition: opacity 0.3s, filter 0.3s;
+}
+
+.line-object.active {
+  opacity: 1;
+  filter: none;
+}
+
+.line-object.inactive {
+  opacity: 0.3;
+  filter: grayscale(80%);
+}
