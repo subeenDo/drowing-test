@@ -1,0 +1,84 @@
+.editor-container {
+  width: 100%;
+  height: 1000px;
+  border: 1px solid #ccc;
+  position: relative;
+  user-select: none;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.editor-svg {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* .add-btn {
+  bottom: 10px;
+  left: 10px;
+  padding: 6px 12px;
+  background-color: #4040ec;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+} */
+
+.toolBar {
+  position: absolute;
+  display: flex;
+  gap: 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: move; 
+  z-index: 9999;
+}
+
+
+/* .add-btn-yellow {
+  padding: 6px 12px;
+  background-color: #e3be50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn-blue {
+  padding: 6px 12px;
+  background-color: #50cae3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+} */
+
+/* .save-btn {
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset-btn {
+  padding: 6px 12px;
+  background-color: #f44336; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+} */
+
+
+.editor-svg circle {
+  cursor: crosshair;
+}
+
