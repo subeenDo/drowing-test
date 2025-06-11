@@ -23,6 +23,9 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
   const svgRef = useRef(null);
   const draggingRef = useRef(null);
 
+  /**
+   * 클라이언트 좌표를 SVG 내부 좌표로 변환
+   */
   const getSvgPoint = (clientX, clientY) => {
     const svg = svgRef.current;
     if (!svg || !svg.getScreenCTM()) return { x: clientX, y: clientY };
@@ -33,7 +36,9 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
     return { x: svgP.x, y: svgP.y };
   };
 
-
+  /**
+   * 선을 중심 좌표로 이동 (x1, y1) ~ (x2, y2)를 중심(cx, cy)으로 이동
+   */
   const moveLineToCenter = (cx, cy, x1, y1, x2, y2) => {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -49,6 +54,9 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
     return { x1: newX1, y1: newY1, x2: newX2, y2: newY2 };
   };
 
+  /**
+   * 이미지 객체를 중심 좌표로 이동
+  */
   const moveImageToCenter = (cx, cy, x1, y1, x2, y2) => {
     const width = x2 - x1;
     const height = y2 - y1;
@@ -61,7 +69,10 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
     return { x1: newX1, y1: newY1, x2: newX2, y2: newY2 };
   };
 
-
+  /**
+   * 개별 오브젝트에 대한 마우스 클릭 시작 처리
+   * → 드래그 시작 준비 (draggingRef에 저장)
+   */
   const handleMouseDown = (objectId, pointType) => (e) => {
     e.preventDefault();
     setSelectedObjectId(objectId);
@@ -82,10 +93,14 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
         offsetY: y - centerY
       };
 
-      return [...rest, clicked];
+      return [...rest, clicked]; // 클릭된 객체를 맨 뒤로 이동
     });
   };
 
+  /**
+   * 전역 mousemove / mouseup 핸들러 등록
+   * → 오브젝트 이동 / 리사이징 처리
+   */
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!draggingRef.current) return;
@@ -127,7 +142,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
             return newObj;
           }
 
-          // 일반 선 객체 처리
+          // 선 객체 처리
           if (pointType === 'start') {
             return { ...object, x1: x, y1: y };
           } else if (pointType === 'end') {
@@ -144,7 +159,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
 
 
     const handleMouseUp = () => {
-      draggingRef.current = null;
+      draggingRef.current = null; // 드래그 종료
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -157,7 +172,9 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
   }, []);
 
 
-
+  /**
+   * SVG 영역 클릭 시 아무 것도 선택되지 않도록
+   */
   const handleSvgClick = (e) => {
     const tagName = e.target.tagName.toLowerCase();
     if (['line', 'circle', 'g', 'image'].includes(tagName)) return;
@@ -172,7 +189,7 @@ const LineEditor = ({bgSelect, objects, setObjects, selectedObject, activeType, 
         backgroundImage: bgSelect ? `url(${bgMap[bgSelect]?.image})` : 'none',
       }}
     >
-
+      {/* SVG 영역: 선 / 이미지 오브젝트 표시 */}
       <svg
         ref={svgRef}
         className="editor-svg"

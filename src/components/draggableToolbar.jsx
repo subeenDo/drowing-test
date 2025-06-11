@@ -6,7 +6,7 @@ const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeTy
   const [isDragging, setIsDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
 
-  // key로 문자열 혹은 "image"만 사용
+  // objects 배열을 순회하며 각 타입별 개수를 계산 (key는 문자열 혹은 "image"로 처리)
   const typeCounts = objects.reduce((acc, object) => {
     const key =
       typeof object.type === 'string'
@@ -18,8 +18,10 @@ const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeTy
     return acc;
   }, {});
 
+  // 마우스 다운 이벤트 핸들러 (드래그 시작)
   const onMouseDown = (e) => {
     const toolbar = toolbarRef.current;
+    // 마우스 위치와 툴바 위치 간 오프셋 계산
     offset.current = {
       x: e.clientX - toolbar.offsetLeft,
       y: e.clientY - toolbar.offsetTop,
@@ -27,16 +29,20 @@ const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeTy
     setIsDragging(true);
   };
 
+  // 드래그 상태에 따라 마우스 움직임 처리
   useEffect(() => {
     const onMouseMove = (e) => {
       if (!isDragging) return;
       const toolbar = toolbarRef.current;
+
+      // 새로운 위치 계산 후 툴바 위치 변경
       const newX = e.clientX - offset.current.x;
       const newY = e.clientY - offset.current.y;
       toolbar.style.left = `${newX}px`;
       toolbar.style.top = `${newY}px`;
     };
 
+    // 마우스 업 시 드래그 종료
     const onMouseUp = () => setIsDragging(false);
 
     window.addEventListener('mousemove', onMouseMove);
@@ -47,12 +53,18 @@ const DraggableToolbar = ({ objects, selectedObject, setSelectedObject, activeTy
     };
   }, [isDragging]);
 
+  // 툴바 외부 클릭 시 선택된 오브젝트 해제 처리
   useEffect(() => {
     const handleClickOutside = (event) => {
       const clickedEl = event.target;
-      const isInsideToolbar = toolbarRef.current?.contains(clickedEl);
+
+      // 클릭한 요소가 툴바 내부인지 검사
+      const isInsideToolbar = toolbarRef.current?.contains(clickedEl); 
+      
+      // [data-skip-deselect] 속성이 붙은 요소는 제외 처리
       const isSkipElement = clickedEl.closest('[data-skip-deselect]');
 
+      // 툴바 외부 클릭이고, 스킵 요소도 아니면 선택 해제
       if (!isInsideToolbar && !isSkipElement) {
         setTimeout(() => setSelectedObject(null), 0);
       }
